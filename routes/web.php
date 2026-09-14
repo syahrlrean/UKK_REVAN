@@ -9,7 +9,8 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Controllers\PerusahaanController
+;
 /*
 |--------------------------------------------------------------------------
 | Halaman Utama
@@ -117,6 +118,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Penjualan
     Route::resource('/penjualan', PenjualanController::class);
 
+    // Perusahaan
+     Route::resource('/perusahaan', PerusahaanController::class);
     // Item Penjualan
     Route::resource('/itempenjualan', ItemPenjualanController::class);
 

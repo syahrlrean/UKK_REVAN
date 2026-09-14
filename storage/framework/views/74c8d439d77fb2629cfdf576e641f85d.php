@@ -186,9 +186,9 @@
     }
 </style>
 
-{{-- HEADER UNTUK TAMPILAN MOBILE --}}
+
 <div class="mobile-header">
-    <a class="sidebar-brand mb-0" href="{{ url('/perusahaan') }}">
+    <a class="sidebar-brand mb-0" href="<?php echo e(url('/perusahaan')); ?>">
         <div class="brand-icon-yellow">
             <i class="bi bi-box-seam-fill"></i>
         </div>
@@ -199,56 +199,56 @@
     </button>
 </div>
 
-{{-- SIDEBAR UTAMA --}}
+
 <aside class="sidebar-custom" id="sidebarMenu">
     <div>
-        {{-- LOGO BRAND --}}
-        <a class="sidebar-brand" href="{{ url('/perusahaan') }}">
+        
+        <a class="sidebar-brand" href="<?php echo e(url('/perusahaan')); ?>">
             <div class="brand-icon-yellow">
                 <i class="bi bi-box-seam-fill"></i>
             </div>
             <span>POS<span style="color: var(--accent-yellow);">SYHRUL</span></span>
         </a>
 
-        {{-- NAVIGATION MENU --}}
+        
         <ul class="sidebar-nav">
             <li>
-                <a class="sidebar-link {{ request()->is('dashboard') ? 'active' : '' }}" href="{{ url('/dashboard') }}">
+                <a class="sidebar-link <?php echo e(request()->is('dashboard') ? 'active' : ''); ?>" href="<?php echo e(url('/dashboard')); ?>">
                     <i class="bi bi-grid-fill"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li>
-                <a class="sidebar-link {{ request()->is('admin/users*') ? 'active' : '' }}" href="{{ Route::has('admin.users') ? route('admin.users') : url('/admin/users') }}">
+                <a class="sidebar-link <?php echo e(request()->is('admin/users*') ? 'active' : ''); ?>" href="<?php echo e(Route::has('admin.users') ? route('admin.users') : url('/admin/users')); ?>">
                     <i class="bi bi-people-fill"></i>
                     <span>Users</span>
                 </a>
             </li>
 
-            {{-- MENU BARU: KATEGORI --}}
+            
             <li>
-                <a class="sidebar-link {{ request()->is('kategori*') ? 'active' : '' }}" href="{{ Route::has('kategori.index') ? route('kategori.index') : url('/kategori') }}">
+                <a class="sidebar-link <?php echo e(request()->is('kategori*') ? 'active' : ''); ?>" href="<?php echo e(Route::has('kategori.index') ? route('kategori.index') : url('/kategori')); ?>">
                     <i class="bi bi-tags-fill"></i>
                     <span>Kategori</span>
                 </a>
             </li>
 
             <li>
-                <a class="sidebar-link {{ request()->is('produk*') ? 'active' : '' }}" href="{{ url('/produk') }}">
+                <a class="sidebar-link <?php echo e(request()->is('produk*') ? 'active' : ''); ?>" href="<?php echo e(url('/produk')); ?>">
                     <i class="bi bi-box-fill"></i>
                     <span>Produk</span>
                 </a>
             </li>
             <li>
-                <a class="sidebar-link {{ request()->is('penjualan*') ? 'active' : '' }}" href="{{ url('/penjualan') }}">
+                <a class="sidebar-link <?php echo e(request()->is('penjualan*') ? 'active' : ''); ?>" href="<?php echo e(url('/penjualan')); ?>">
                     <i class="bi bi-file-earmark-bar-graph-fill"></i>
                     <span>Penjualan</span>
                 </a>
             </li>
 
-            {{-- MENU BARU: PROFIL (DI SIDEBAR MAIN MENU) --}}
+            
             <li>
-                <a class="sidebar-link {{ request()->is('profil*') || request()->is('profile*') ? 'active' : '' }}" href="{{ Route::has('profile.index') ? route('profile.index') : (Route::has('profile.edit') ? route('profile.edit') : url('/profil')) }}">
+                <a class="sidebar-link <?php echo e(request()->is('profil*') || request()->is('profile*') ? 'active' : ''); ?>" href="<?php echo e(Route::has('profile.index') ? route('profile.index') : (Route::has('profile.edit') ? route('profile.edit') : url('/profil'))); ?>">
                     <i class="bi bi-person-circle"></i>
                     <span>Profil Saya</span>
                 </a>
@@ -256,16 +256,17 @@
         </ul>
     </div>
 
-    {{-- USER DROPDOWN SECTION (BAGIAN BAWAH SIDEBAR) --}}
+    
     <div class="dropup">
         <button class="btn sidebar-user-card w-100 d-flex align-items-center justify-content-between text-start border-0" 
                 type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <div class="d-flex align-items-center gap-2 overflow-hidden">
                 <div class="avatar-circle-yellow flex-shrink-0">
-                    {{ strtoupper(substr(Auth::user()->name ?? 'K', 0, 1)) }}
+                    <?php echo e(strtoupper(substr(Auth::user()->name ?? 'K', 0, 1))); ?>
+
                 </div>
                 <div class="text-truncate">
-                    <div class="fw-bold text-white fs-7 text-truncate">{{ Auth::user()->name ?? 'Kuda' }}</div>
+                    <div class="fw-bold text-white fs-7 text-truncate"><?php echo e(Auth::user()->name ?? 'Kuda'); ?></div>
                     <div class="text-muted" style="font-size: 0.75rem;">Account</div>
                 </div>
             </div>
@@ -274,7 +275,7 @@
 
         <ul class="dropdown-menu dropdown-menu-dark-yellow p-2">
             <li>
-                <a class="dropdown-item d-flex align-items-center gap-2" href="{{ Route::has('profile.edit') ? route('profile.edit') : (Route::has('profile.index') ? route('profile.index') : url('/profil')) }}">
+                <a class="dropdown-item d-flex align-items-center gap-2" href="<?php echo e(Route::has('profile.edit') ? route('profile.edit') : (Route::has('profile.index') ? route('profile.index') : url('/profil'))); ?>">
                     <i class="bi bi-person"></i> Profil
                 </a>
             </li>
@@ -282,8 +283,8 @@
                 <hr class="dropdown-divider border-secondary opacity-25">
             </li>
             <li>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
+                <form action="<?php echo e(route('logout')); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
                     <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2 w-100 border-0 bg-transparent text-start">
                         <i class="bi bi-box-arrow-right"></i> Keluar
                     </button>
@@ -291,4 +292,4 @@
             </li>
         </ul>
     </div>
-</aside>
+</aside><?php /**PATH C:\laragon\www\UKK_REVAN\resources\views/layouts/navbar.blade.php ENDPATH**/ ?>
