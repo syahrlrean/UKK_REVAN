@@ -47,6 +47,10 @@
     .delay-4 { animation-delay: 0.4s; }
 
     /* Modern Glassmorphism Cards */
+    .row > [class*='col-'] {
+        display: flex;
+    }
+
     .card-pro {
         background: var(--card-bg) !important;
         border: 1px solid var(--card-border);
@@ -54,6 +58,8 @@
         transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
+        width: 100%;
+        height: 100%;
     }
 
     .card-pro:hover {
@@ -177,8 +183,52 @@
         </div>
     </div>
 
-    {{-- SALES & PAYMENT (ADMIN ONLY) --}}
-    @can('viewAny', App\Models\User::class)
+    {{-- DIGITAL BUSINESS SUMMARY --}}
+    <div class="mb-5">
+        <div class="d-flex align-items-center justify-content-between mb-3 anim-item delay-1">
+            <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-wallet2" style="color: var(--accent-yellow);"></i>
+                Ringkasan Keuangan & Stok
+            </h5>
+        </div>
+
+        <div class="row g-3">
+            {{-- Pemasukan Uang --}}
+            <div class="col-12 col-sm-6 col-xl-4 anim-item delay-1">
+                <div class="card card-pro card-grad-emerald p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-uppercase fw-bold fs-7" style="color: #86efac; letter-spacing: 0.05em;">Pemasukan Uang</span>
+                            <h3 class="fw-bold text-white mt-2 mb-0" style="font-size: 1.5rem;">
+                                Rp {{ number_format($keuangan['total_pemasukan']) }}
+                            </h3>
+                        </div>
+                        <div class="icon-box-pro" style="background: rgba(16, 185, 129, 0.15); color: #86efac; border: 1px solid rgba(16, 185, 129, 0.3);">
+                            <i class="bi bi-arrow-down-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Jumlah Stok --}}
+            <div class="col-12 col-sm-6 col-xl-4 anim-item delay-2">
+                <div class="card card-pro card-grad-yellow p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-uppercase fw-bold fs-7" style="color: #fef08a; letter-spacing: 0.05em;">Jumlah Stok</span>
+                            <h3 class="fw-bold text-white mt-2 mb-0" style="font-size: 1.5rem;">
+                                {{ number_format($keuangan['total_stok']) }} <span class="fs-6 fw-normal" style="color: #fef08a;">pcs</span>
+                            </h3>
+                        </div>
+                        <div class="icon-box-pro" style="background: rgba(245, 158, 11, 0.15); color: #fef08a; border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="mb-5">
         <div class="d-flex align-items-center justify-content-between mb-3 anim-item delay-1">
             <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
@@ -190,7 +240,7 @@
         <div class="row g-3">
             {{-- Total Penjualan --}}
             <div class="col-12 col-sm-6 col-xl-3 anim-item delay-1">
-                <div class="card card-pro card-grad-amber p-4">
+                <div class="card card-pro card-grad-amber p-4 h-100">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <span class="text-uppercase fw-bold fs-7" style="color: #fde047; letter-spacing: 0.05em;">Total Penjualan</span>
@@ -257,7 +307,6 @@
             </div>
         </div>
     </div>
-    @endcan
 
     {{-- CRITICAL INVENTORY STATUS --}}
     <div class="mb-5 anim-item delay-2">
@@ -369,8 +418,70 @@
         </div>
     </div>
 
+    {{-- RECENT SALES TRANSACTIONS --}}
+    <div class="mb-5 anim-item delay-3">
+        <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+            <i class="bi bi-receipt-cutoff" style="color: #fbbf24;"></i>
+            Transaksi Penjualan
+        </h5>
+
+        <div class="card card-pro overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-pro align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4" style="width: 80px;">#</th>
+                            <th>Invoice</th>
+                            <th>Tanggal</th>
+                            <th>Kasir</th>
+                            <th>Metode</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($transaksiTerbaru as $index => $trx)
+                        <tr>
+                            <td class="ps-4 fw-semibold" style="color: #a1a1aa;">{{ $index + 1 }}</td>
+                            <td class="fw-semibold text-white">#{{ $trx->id }}</td>
+                            <td style="color: #fef3c7;">{{ \Carbon\Carbon::parse($trx->created_at)->translatedFormat('d M Y') }}</td>
+                            <td>{{ $trx->kasir }}</td>
+                            <td>
+                                <span class="badge rounded-pill px-3 py-2" style="background: rgba(245, 158, 11, 0.14); color: #fef08a; border: 1px solid rgba(245, 158, 11, 0.25);">
+                                    {{ strtoupper($trx->metode_pembayaran) }}
+                                </span>
+                            </td>
+                            <td class="text-end fw-bold" style="color: #fde047;">
+                                Rp {{ number_format($trx->total_pembayaran) }}
+                            </td>
+                            <td class="text-center">
+                                @if(strtoupper($trx->status) === 'COMPLETED')
+                                    <span class="badge rounded-pill px-3 py-2" style="background: rgba(16, 185, 129, 0.12); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                        {{ $trx->status }}
+                                    </span>
+                                @else
+                                    <span class="badge rounded-pill px-3 py-2" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                        {{ $trx->status }}
+                                    </span>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-5" style="color: #a1a1aa;">
+                                <i class="bi bi-receipt fs-1 d-block mb-2" style="color: #71717a;"></i>
+                                Belum ada transaksi penjualan.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     {{-- BEST SELLER PRODUCTS --}}
-    <div class="mb-4 anim-item delay-3">
+    <div class="mb-4 anim-item delay-4">
         <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
             <i class="bi bi-trophy-fill" style="color: #fbbf24;"></i>
             Produk Terlaris

@@ -21,11 +21,42 @@ class LaporanPenjualanService
            ->first();
 
         return [
-            'total_transaksi' => $data->total_transaksi ?? 0,
-            'total_penjualan' => $data->total_penjualan ?? 0,
-            'total_cash'      => $data->total_cash ?? 0,
-            'total_non_tunai' => $data->total_non_tunai ?? 0,
+            'total_transaksi' => (int) ($data->total_transaksi ?? 0),
+            'total_penjualan' => (int) ($data->total_penjualan ?? 0),
+            'total_cash'      => (int) ($data->total_cash ?? 0),
+            'total_non_tunai' => (int) ($data->total_non_tunai ?? 0),
         ];
+    }
+
+    public function ringkasanKeuangan(): array
+    {
+        $pemasukan = DB::table('penjualan')
+            ->where('status', 'COMPLETED')
+            ->sum('total_pembayaran');
+
+        $totalStok = DB::table('produk')->sum('stok');
+
+        return [
+            'total_pemasukan' => (int) ($pemasukan ?? 0),
+            'total_stok' => (int) ($totalStok ?? 0),
+        ];
+    }
+
+    public function transaksiTerbaru(int $limit = 8)
+    {
+        return DB::table('penjualan')
+            ->join('users', 'users.id', '=', 'penjualan.user_id')
+            ->select(
+                'penjualan.id',
+                'penjualan.total_pembayaran',
+                'penjualan.metode_pembayaran',
+                'penjualan.status',
+                'penjualan.created_at',
+                'users.name as kasir'
+            )
+            ->orderByDesc('penjualan.created_at')
+            ->limit($limit)
+            ->get();
     }
 
     public function produkTerlarisHariIni(int $limit = 5)

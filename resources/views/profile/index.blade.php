@@ -58,8 +58,8 @@
     }
 
     .profile-avatar {
-        width: 80px;
-        height: 80px;
+        width: 90px;
+        height: 90px;
         background-color: rgba(245, 158, 11, 0.15);
         color: var(--accent-yellow);
         font-size: 2.2rem;
@@ -70,6 +70,29 @@
         align-items: center;
         justify-content: center;
         margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .upload-box {
+        border: 1px dashed rgba(245, 158, 11, 0.45);
+        background: rgba(12, 10, 9, 0.5);
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .upload-preview {
+        width: 64px;
+        height: 64px;
+        border-radius: 0.75rem;
+        object-fit: cover;
+        border: 1px solid rgba(245, 158, 11, 0.5);
+        display: none;
     }
 </style>
 
@@ -107,14 +130,18 @@
         {{-- CARD USER INFO --}}
         <div class="col-md-4">
             <div class="card card-dark-yellow p-4 text-center h-100 d-flex flex-column align-items-center justify-content-center">
-                <div class="profile-avatar mb-3">
-                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                <div class="profile-avatar mb-3" id="profileAvatar">
+                    @if($user->foto)
+                        <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto Profil">
+                    @else
+                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    @endif
                 </div>
                 <h5 class="fw-bold text-white mb-1">{{ $user->name }}</h5>
                 <p class="text-muted small mb-3 text-break">{{ $user->email }}</p>
                 <div>
                     <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
-                        <i class="bi bi-shield-lock-fill me-1"></i> {{ ucfirst($user->role ?? 'Admin') }}
+                        <i class="bi bi-shield-lock-fill me-1"></i> {{ ucfirst($user->role?->name ?? 'Admin') }}
                     </span>
                 </div>
             </div>
@@ -127,7 +154,7 @@
                     <i class="bi bi-person-gear me-2" style="color: var(--accent-yellow);"></i> Pengaturan Akun
                 </h5>
 
-                <form action="{{ route('profile.update') }}" method="POST">
+                <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -136,9 +163,18 @@
                         <input type="text" name="name" class="form-control form-control-dark" value="{{ old('name', $user->name) }}" required>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="form-label text-subtle small fw-bold">ALAMAT EMAIL</label>
                         <input type="email" name="email" class="form-control form-control-dark" value="{{ old('email', $user->email) }}" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-subtle small fw-bold">FOTO PROFIL</label>
+                        <div class="upload-box">
+                            <input type="file" name="foto" class="form-control form-control-dark" accept="image/*">
+                            <img id="fotoPreview" class="upload-preview mt-3" alt="Pratinjau foto profil">
+                            <small class="text-muted d-block mt-2">Pilih gambar dari perangkat. Format JPG, JPEG, PNG, GIF, WEBP. Maks 4MB.</small>
+                        </div>
                     </div>
 
                     <h6 class="fw-bold text-white mt-4 mb-3 pt-3 border-top border-secondary border-opacity-25">
@@ -172,5 +208,24 @@
     </div>
 
 </div>
+
+<script>
+    const fotoInput = document.querySelector('input[name="foto"]');
+    const fotoPreview = document.getElementById('fotoPreview');
+
+    fotoInput?.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            fotoPreview.style.display = 'none';
+            return;
+        }
+
+        const imageUrl = URL.createObjectURL(file);
+        fotoPreview.src = imageUrl;
+        fotoPreview.style.display = 'block';
+
+        document.getElementById('profileAvatar').innerHTML = `<img src="${imageUrl}" alt="Pratinjau foto profil">`;
+    });
+</script>
 
 @endsection

@@ -273,10 +273,20 @@
                         {{-- METODE PEMBAYARAN --}}
                         <div class="mb-4">
                             <label class="form-label-custom small text-muted mb-2 fw-semibold">Metode Pembayaran</label>
-                            <select name="metode_pembayaran" class="form-select form-control-dark">
+                            <select name="metode_pembayaran" id="metodePembayaran" class="form-select form-control-dark">
                                 <option value="CASH">CASH (Tunai)</option>
                                 <option value="QRIS">QRIS</option>
                             </select>
+                        </div>
+
+                        <div id="qrisPanel" class="mb-4 p-3 rounded-3 text-center" style="display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.35);">
+                            <span class="text-white small fw-semibold d-block mb-2">Scan QRIS untuk membayar</span>
+                            @if(Auth::user()->foto_qris)
+                                <img src="{{ asset('storage/' . Auth::user()->foto_qris) }}" alt="QRIS pembayaran" style="width: 190px; height: 190px; object-fit: contain; background: #ffffff; padding: 8px; border-radius: 0.75rem;">
+                            @else
+                                <div class="text-warning small py-3">Foto QRIS belum ditambahkan. Upload melalui halaman perusahaan.</div>
+                                <a href="{{ route('perusahaan.index') }}" class="btn btn-sm btn-outline-warning">Atur QRIS</a>
+                            @endif
                         </div>
 
                         {{-- TOTAL HARGA --}}
@@ -406,6 +416,16 @@
                 }
             });
         });
+
+        const metodePembayaran = document.getElementById('metodePembayaran');
+        const qrisPanel = document.getElementById('qrisPanel');
+
+        function toggleQrisPanel() {
+            qrisPanel.style.display = metodePembayaran.value === 'QRIS' ? 'block' : 'none';
+        }
+
+        metodePembayaran.addEventListener('change', toggleQrisPanel);
+        toggleQrisPanel();
     </script>
 
 @endsection

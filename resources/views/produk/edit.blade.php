@@ -144,6 +144,19 @@
                         @error('nama') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label-custom">Kategori Produk <span class="text-danger">*</span></label>
+                        <select name="kategori_id" class="form-select form-control-dark @error('kategori_id') is-invalid @enderror" required>
+                            <option value="" disabled {{ old('kategori_id', $produk->kategori_id) == null ? 'selected' : '' }}>-- Pilih Kategori --</option>
+                            @foreach ($kategoris as $kategori)
+                                <option value="{{ $kategori->id }}" {{ old('kategori_id', $produk->kategori_id) == $kategori->id ? 'selected' : '' }} style="background-color: #1c1917; color: #ffffff;">
+                                    {{ $kategori->nama ?? $kategori->nama_kategori ?? $kategori->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('kategori_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <label class="form-label-custom">Harga Beli (Rp)</label>

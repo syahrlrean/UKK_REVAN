@@ -119,7 +119,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::resource('/penjualan', PenjualanController::class);
 
     // Perusahaan
-     Route::resource('/perusahaan', PerusahaanController::class);
+    Route::put('/perusahaan/profil', [PerusahaanController::class, 'updateProfile'])
+        ->name('perusahaan.profile.update');
+    Route::resource('/perusahaan', PerusahaanController::class);
     // Item Penjualan
     Route::resource('/itempenjualan', ItemPenjualanController::class);
 

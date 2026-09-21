@@ -31,19 +31,27 @@ class PenjualanController extends Controller
             'items'             => 'required|array|min:1',
             'items.*.produk_id' => 'required|exists:produk,id',
             'items.*.qty'       => 'required|integer|min:1',
-            'items.*.harga'     => 'required|numeric',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // 1. Hitung Total Pembayaran
+            // Ambil harga dari database agar transaksi tidak bergantung pada input harga dari browser.
+            $items = [];
             $totalPembayaran = 0;
             foreach ($request->items as $item) {
-                $totalPembayaran += $item['harga'] * $item['qty'];
+                $produk = Produk::lockForUpdate()->findOrFail($item['produk_id']);
+
+                if ($produk->stok < $item['qty']) {
+                    throw new \RuntimeException("Stok produk {$produk->nama} tidak mencukupi.");
+                }
+
+                $harga = (int) $produk->harga_jual;
+                $subtotal = $harga * (int) $item['qty'];
+                $totalPembayaran += $subtotal;
+                $items[] = compact('produk', 'item', 'harga', 'subtotal');
             }
 
-            // 2. Simpan Data Penjualan Utama
             $penjualan = Penjualan::create([
                 'user_id'           => Auth::id() ?? 1,
                 'total_pembayaran'  => $totalPembayaran,
@@ -51,26 +59,23 @@ class PenjualanController extends Controller
                 'status'            => 'COMPLETED',
             ]);
 
-            // 3. Simpan Detail Item & Potong Stok Produk
-            foreach ($request->items as $item) {
-                // Simpan ke ItemPenjualan (Sesuaikan nama kolom jika ada perbedaan)
+            foreach ($items as $data) {
                 ItemPenjualan::create([
                     'penjualan_id' => $penjualan->id,
-                    'produk_id'    => $item['produk_id'],
-                    'jumlah'       => $item['qty'],
-                    'harga_satuan' => $item['harga'],
-                    'subtotal'     => $item['harga'] * $item['qty'],
+                    'produk_id'    => $data['produk']->id,
+                    'kuantitas'    => $data['item']['qty'],
+                    'harga_satuan' => $data['harga'],
+                    'subtotal'     => $data['subtotal'],
                 ]);
 
-                // Potong Stok Produk
-                $produk = Produk::findOrFail($item['produk_id']);
-                $produk->decrement('stok', $item['qty']);
+                $data['produk']->decrement('stok', $data['item']['qty']);
             }
 
             DB::commit();
 
             return redirect()->route('penjualan.show', $penjualan->id)
-                             ->with('success', 'Transaksi berhasil disimpan!');
+                             ->with('success', 'Transaksi berhasil disimpan!')
+                             ->with('auto_print', strtoupper($request->metode_pembayaran) === 'CASH');
 
         } catch (\Exception $e) {
             DB::rollBack();

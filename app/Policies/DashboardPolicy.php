@@ -11,6 +11,6 @@ class DashboardPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->role->name === 'admin';
+        return true;
     }
 }

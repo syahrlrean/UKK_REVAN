@@ -423,7 +423,7 @@
 
                     @foreach ($errors->all() as $error)
 
-                        <li>
+                        <li class="login-error-message">
                             {{ $error }}
                         </li>
 
@@ -546,6 +546,33 @@
     {{-- Bootstrap JS --}}
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script>
+        const lockoutMessage = document.querySelector('.login-error-message');
+        const loginButton = document.querySelector('button[type="submit"]');
+
+        if (lockoutMessage) {
+            const lockoutPattern = /(\d+) detik/;
+            const match = lockoutMessage.textContent.match(lockoutPattern);
+
+            if (match) {
+                let secondsLeft = Number(match[1]);
+                loginButton.disabled = true;
+
+                const countdown = setInterval(() => {
+                    secondsLeft -= 1;
+
+                    if (secondsLeft <= 0) {
+                        clearInterval(countdown);
+                        lockoutMessage.textContent = 'Waktu blokir sudah habis. Silakan coba login kembali.';
+                        loginButton.disabled = false;
+                        return;
+                    }
+
+                    lockoutMessage.textContent = `Tiga kali percobaan gagal. Login diblokir selama ${secondsLeft} detik.`;
+                }, 1000);
+            }
+        }
     </script>
 
 </body>

@@ -3,235 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POSSYHRUL - Perusahaan & Penjualan</title>
-    <!-- CDN Tailwind CSS -->
+    <title>{{ $user->nama_perusahaan ?: 'POSSYHRUL' }} - Profil Perusahaan</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { color-scheme: dark; }
+        body { transition: background-color 0.25s ease, color 0.25s ease; }
+        .company-photo {
+            width: 132px;
+            height: 132px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #f59e0b;
+            box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.12);
+        }
+        .company-photo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(245, 158, 11, 0.18);
+            color: #fcd34d;
+            font-size: 3rem;
+            font-weight: 800;
+        }
+        .theme-light { background: #f1f5f9 !important; color: #172033 !important; }
+        .theme-light .bg-gray-900 { background: #ffffff !important; }
+        .theme-light .bg-gray-950 { background: #f1f5f9 !important; }
+        .theme-light .text-white { color: #172033 !important; }
+        .theme-light .text-gray-300,
+        .theme-light .text-gray-400 { color: #475569 !important; }
+        .theme-light .text-gray-500 { color: #64748b !important; }
+        .theme-light .border-gray-800 { border-color: #cbd5e1 !important; }
+        .theme-light input,
+        .theme-light textarea { background: #f8fafc !important; color: #172033 !important; border-color: #cbd5e1 !important; }
+    </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen font-sans p-6 md:p-10">
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans p-6 md:p-10" id="companyPage">
 
-    <main class="max-w-6xl mx-auto space-y-8">
-        
-        <!-- HEADER HALAMAN & PROFIL PERUSAHAAN -->
+    <main class="max-w-5xl mx-auto space-y-6">
+
+        @if(session('success'))
+            <div class="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">{{ session('success') }}</div>
+        @endif
+        @if($errors->any())
+            <div class="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">{{ $errors->first() }}</div>
+        @endif
+
         <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <h1 class="text-3xl font-extrabold tracking-tight text-white">Tabel Perusahaan POSSYAHRUL</h1>
-                <p class="text-sm text-gray-400 mt-1">Sistem Manajemen Stok & Rekapitulasi Data Penjualan iPhone</p>
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl font-bold text-amber-300">{{ strtoupper(substr($user->nama_perusahaan ?: 'P', 0, 1)) }}</div>
+                <div>
+                    <p class="text-xs uppercase tracking-[0.2em] text-amber-400 mb-1">Profil Perusahaan</p>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-white">{{ $user->nama_perusahaan ?: 'POSSYHRUL' }}</h1>
+                    <p class="text-sm text-gray-400 mt-1">{{ $user->deskripsi ?: 'Sistem Manajemen Stok & Rekapitulasi Data Penjualan.' }}</p>
+                    @if($user->website)
+                        <a href="{{ $user->website }}" target="_blank" rel="noopener noreferrer" class="inline-block text-xs mt-2 text-amber-400 hover:text-amber-300">{{ $user->website }}</a>
+                    @endif
+                </div>
             </div>
-            
-            <div class="flex items-center gap-3">
-                <button onclick="bukaModalTambah()" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-black font-semibold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/10 transition-all cursor-pointer">
-                    + Tambah Data Penjualan
-                </button>
-                <button onclick="exportKeExcel()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 font-medium text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer">
-                    Export Excel
-                </button>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('dashboard') }}" class="rounded-xl border border-gray-700 bg-gray-800 px-4 py-2.5 text-xs font-semibold text-gray-200 hover:bg-gray-700">Kembali</a>
+                <button type="button" id="themeToggle" class="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-amber-300 hover:bg-amber-500/20">Mode terang</button>
             </div>
+
         </div>
 
-        <!-- TABEL DATA PENJUALAN -->
-        <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-xl space-y-4">
-            <div>
-                <h2 class="text-xl font-bold text-white">Laporan Penjualan iPhone</h2>
-                <p class="text-xs text-gray-400">Periode Transaksi Bulan Ini</p>
-            </div>
+        <section class="bg-gray-900 rounded-2xl p-7 border border-gray-800 shadow-xl text-center">
+            <p class="text-xs uppercase tracking-[0.2em] text-amber-400 mb-4">Foto Profil Perusahaan</p>
+            @if($user->foto_perusahaan)
+                <img id="companyPhotoPreview" src="{{ asset('storage/' . $user->foto_perusahaan) }}" alt="Foto {{ $user->nama_perusahaan ?: 'perusahaan' }}" class="company-photo mx-auto">
+            @else
+                <div id="companyPhotoPlaceholder" class="company-photo company-photo-placeholder mx-auto">{{ strtoupper(substr($user->nama_perusahaan ?: 'P', 0, 1)) }}</div>
+                <img id="companyPhotoPreview" alt="Pratinjau foto perusahaan" class="company-photo mx-auto hidden">
+            @endif
+            <form action="{{ route('perusahaan.profile.update') }}" method="POST" enctype="multipart/form-data" class="mx-auto mt-6 max-w-xl text-left">
+                @csrf
+                @method('PUT')
+                <label for="fotoPerusahaan" class="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-400">Pilih foto perusahaan</label>
+                <input id="fotoPerusahaan" type="file" name="foto_perusahaan" accept="image/*" class="w-full rounded-xl border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-gray-200">
+                <p class="mt-2 text-xs text-gray-500">JPG, JPEG, PNG, GIF, atau WEBP. Maksimal 4MB.</p>
 
-            <div class="overflow-x-auto rounded-xl border border-gray-800">
-                <table class="w-full text-left text-sm border-collapse" id="tabelPenjualan">
-                    <thead>
-                        <tr class="bg-gray-800/80 text-gray-400 text-[11px] uppercase tracking-wider border-b border-gray-800">
-                            <th class="p-4">Model iPhone</th>
-                            <th class="p-4">Kapasitas</th>
-                            <th class="p-4">Harga Satuan</th>
-                            <th class="p-4">Terjual</th>
-                            <th class="p-4">Total Pendapatan</th>
-                            <th class="p-4 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-800 text-gray-200 text-xs" id="bodyTabel">
-                        <!-- Data akan di-render otomatis oleh JavaScript -->
-                    </tbody>
-                    <tfoot>
-                        <tr class="bg-gray-800/50 font-bold text-white border-t border-gray-800">
-                            <td colspan="4" class="p-4 text-right text-gray-400 text-xs">Total Pendapatan Keseluruhan:</td>
-                            <td colspan="2" class="p-4 text-amber-400 text-base font-extrabold" id="grandTotalText">Rp 0</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- MODAL POP-UP (INPUT / EDIT DATA) -->
-    <div id="modalForm" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                <h3 id="modalTitle" class="text-lg font-bold text-white">Form Penjualan</h3>
-                <button onclick="tutupModal()" class="text-gray-400 hover:text-white text-lg font-bold cursor-pointer">&times;</button>
-            </div>
-            
-            <form id="formPenjualan" onsubmit="simpanData(event)" class="space-y-4">
-                <input type="hidden" id="editIndex" value="-1">
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Model iPhone</label>
-                    <input type="text" id="inputModel" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="iPhone 15 Pro">
+                <div class="mt-6 grid gap-4 md:grid-cols-2">
+                    <input type="text" name="nama_perusahaan" value="{{ old('nama_perusahaan', $user->nama_perusahaan) }}" placeholder="Nama perusahaan" class="rounded-xl border border-gray-700 bg-gray-950 px-4 py-3 text-sm text-white">
+                    <input type="url" name="website" value="{{ old('website', $user->website) }}" placeholder="https://website.com" class="rounded-xl border border-gray-700 bg-gray-950 px-4 py-3 text-sm text-white">
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Kapasitas</label>
-                    <input type="text" id="inputKapasitas" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="128 GB">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Harga Satuan (Rp)</label>
-                        <input type="number" id="inputHarga" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Jumlah Terjual</label>
-                        <input type="number" id="inputTerjual" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-                    </div>
-                </div>
-                
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="tutupModal()" class="px-4 py-2 rounded-xl text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 cursor-pointer">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl text-xs bg-amber-500 hover:bg-amber-600 text-black font-semibold cursor-pointer">Simpan Data</button>
-                </div>
+                <textarea name="deskripsi" rows="3" placeholder="Keterangan singkat perusahaan" class="mt-4 w-full rounded-xl border border-gray-700 bg-gray-950 px-4 py-3 text-sm text-white">{{ old('deskripsi', $user->deskripsi) }}</textarea>
+                <label for="fotoQris" class="mt-5 mb-2 block text-xs font-bold uppercase tracking-wider text-gray-400">Foto QRIS pembayaran</label>
+                <input id="fotoQris" type="file" name="foto_qris" accept="image/*" class="w-full rounded-xl border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-gray-200">
+                <p class="mt-2 text-xs text-gray-500">Upload QRIS resmi toko agar pelanggan dapat memindainya.</p>
+                <button type="submit" class="mt-4 w-full rounded-xl bg-amber-500 px-4 py-3 text-sm font-bold text-black hover:bg-amber-400">Simpan Profil Perusahaan</button>
             </form>
-        </div>
-    </div>
+        </section>
 
-    <!-- JAVASCRIPT LOGIKA TAMBAH, EDIT, HAPUS & EXPORT -->
+        <section class="grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
+            <article class="bg-gray-900 rounded-2xl p-7 border border-gray-800 shadow-xl">
+                <p class="text-xs uppercase tracking-[0.2em] text-amber-400 mb-3">Tentang Kami</p>
+                <h2 class="text-2xl font-bold text-white mb-4">Mengelola bisnis dengan data yang lebih jelas.</h2>
+                <p class="text-gray-400 leading-7">{{ $user->deskripsi ?: 'Website ini dibuat untuk membantu perusahaan mengelola produk, stok, kategori, dan transaksi penjualan dalam satu tempat yang rapi dan mudah digunakan.' }}</p>
+            </article>
+
+            <article class="bg-gray-900 rounded-2xl p-7 border border-gray-800 shadow-xl">
+                <p class="text-xs uppercase tracking-[0.2em] text-amber-400 mb-3">Tujuan Website</p>
+                <ul class="space-y-4 text-sm text-gray-300">
+                    <li class="flex gap-3"><span class="text-amber-400">01</span><span>Mencatat transaksi penjualan secara teratur.</span></li>
+                    <li class="flex gap-3"><span class="text-amber-400">02</span><span>Memantau stok produk dengan lebih cepat.</span></li>
+                    <li class="flex gap-3"><span class="text-amber-400">03</span><span>Menyediakan ringkasan pemasukan dan stok.</span></li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="bg-gray-900 rounded-2xl p-7 border border-gray-800 shadow-xl">
+            <div class="grid gap-6 md:grid-cols-2">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.2em] text-amber-400 mb-3">Informasi Perusahaan</p>
+                    <dl class="space-y-4 text-sm">
+                        <div><dt class="text-gray-500">Nama perusahaan</dt><dd class="text-white font-semibold mt-1">{{ $user->nama_perusahaan ?: 'Belum diatur' }}</dd></div>
+                        <div><dt class="text-gray-500">Pemilik / pengelola</dt><dd class="text-white font-semibold mt-1">{{ $user->name }}</dd></div>
+                        <div><dt class="text-gray-500">Email</dt><dd class="text-white font-semibold mt-1 break-all">{{ $user->email }}</dd></div>
+                    </dl>
+                </div>
+                <div>
+                    <p class="text-xs uppercase tracking-[0.2em] text-amber-400 mb-3">Website</p>
+                    @if($user->website)
+                        <a href="{{ $user->website }}" target="_blank" rel="noopener noreferrer" class="text-lg text-white font-semibold break-all hover:text-amber-400">{{ $user->website }}</a>
+                    @else
+                        <p class="text-gray-500">Website belum ditambahkan.</p>
+                    @endif
+                    <p class="text-sm text-gray-500 mt-4">Data perusahaan ditampilkan terpisah dari profil pribadi pengguna.</p>
+                </div>
+            </div>
+        </section>
+    </main>
     <script>
-        // Data Awal Penjualan
-        let dataPenjualan = [
-            { model: "iPhone 15 Pro Max", kapasitas: "256 GB", harga: 24999000, terjual: 12 },
-            { model: "iPhone 15 Pro", kapasitas: "128 GB", harga: 20999000, terjual: 18 },
-            { model: "iPhone 15", kapasitas: "128 GB", harga: 16499000, terjual: 25 },
-            { model: "iPhone 14", kapasitas: "128 GB", harga: 13999000, terjual: 15 },
-            { model: "iPhone 13", kapasitas: "128 GB", harga: 10999000, terjual: 30 }
-        ];
+        const page = document.getElementById('companyPage');
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('pos-theme');
 
-        // Format angka ke Rupiah
-        function formatRupiah(angka) {
-            return 'Rp ' + Number(angka).toLocaleString('id-ID');
+        if (savedTheme === 'light') {
+            page.classList.add('theme-light');
+            themeToggle.textContent = 'Mode gelap';
         }
 
-        // Render tabel & hitung total
-        function renderTabel() {
-            const bodyTabel = document.getElementById('bodyTabel');
-            bodyTabel.innerHTML = '';
-            let grandTotal = 0;
+        themeToggle.addEventListener('click', () => {
+            const isLight = page.classList.toggle('theme-light');
+            localStorage.setItem('pos-theme', isLight ? 'light' : 'dark');
+            themeToggle.textContent = isLight ? 'Mode gelap' : 'Mode terang';
+        });
 
-            dataPenjualan.forEach((item, index) => {
-                let total = item.harga * item.terjual;
-                grandTotal += total;
+        document.getElementById('fotoPerusahaan').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
 
-                let row = `
-                    <tr class="hover:bg-gray-800/40 transition-all">
-                        <td class="p-4 font-semibold text-white">${item.model}</td>
-                        <td class="p-4 text-gray-400">${item.kapasitas}</td>
-                        <td class="p-4">${formatRupiah(item.harga)}</td>
-                        <td class="p-4">
-                            <span class="bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-md border border-amber-500/20 font-medium text-[11px]">
-                                ${item.terjual} unit
-                            </span>
-                        </td>
-                        <td class="p-4 font-semibold text-amber-400">${formatRupiah(total)}</td>
-                        <td class="p-4 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <button onclick="bukaModalEdit(${index})" class="bg-blue-600/20 hover:bg-blue-600 active:scale-95 text-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500/30 transition-all text-[11px] font-medium cursor-pointer">
-                                    Edit
-                                </button>
-                                <button onclick="hapusData(${index})" class="bg-red-600/20 hover:bg-red-600 active:scale-95 text-red-400 hover:text-white px-3 py-1.5 rounded-lg border border-red-500/30 transition-all text-[11px] font-medium cursor-pointer">
-                                    Hapus
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                bodyTabel.innerHTML += row;
-            });
-
-            document.getElementById('grandTotalText').innerText = formatRupiah(grandTotal);
-        }
-
-        // Buka Modal Tambah
-        function bukaModalTambah() {
-            document.getElementById('modalTitle').innerText = 'Tambah Data Penjualan';
-            document.getElementById('editIndex').value = '-1';
-            document.getElementById('formPenjualan').reset();
-            document.getElementById('modalForm').classList.remove('hidden');
-        }
-
-        // Buka Modal Edit
-        function bukaModalEdit(index) {
-            let item = dataPenjualan[index];
-            document.getElementById('modalTitle').innerText = 'Edit Data: ' + item.model;
-            document.getElementById('editIndex').value = index;
-            document.getElementById('inputModel').value = item.model;
-            document.getElementById('inputKapasitas').value = item.kapasitas;
-            document.getElementById('inputHarga').value = item.harga;
-            document.getElementById('inputTerjual').value = item.terjual;
-            document.getElementById('modalForm').classList.remove('hidden');
-        }
-
-        // Tutup Modal
-        function tutupModal() {
-            document.getElementById('modalForm').classList.add('hidden');
-        }
-
-        // Simpan Data (Tambah / Edit)
-        function simpanData(e) {
-            e.preventDefault();
-            let index = parseInt(document.getElementById('editIndex').value);
-            
-            let dataBaru = {
-                model: document.getElementById('inputModel').value,
-                kapasitas: document.getElementById('inputKapasitas').value,
-                harga: parseInt(document.getElementById('inputHarga').value),
-                terjual: parseInt(document.getElementById('inputTerjual').value)
-            };
-
-            if (index === -1) {
-                // Tambah Data Baru
-                dataPenjualan.push(dataBaru);
-            } else {
-                // Update Data Lama
-                dataPenjualan[index] = dataBaru;
-            }
-
-            tutupModal();
-            renderTabel();
-        }
-
-        // Hapus Data
-        function hapusData(index) {
-            if (confirm('Apakah kamu yakin ingin menghapus data ini?')) {
-                dataPenjualan.splice(index, 1);
-                renderTabel();
-            }
-        }
-
-        // Export ke Excel (CSV)
-        function exportKeExcel() {
-            let csv = ["Model iPhone,Kapasitas,Harga Satuan,Terjual,Total Pendapatan"];
-            dataPenjualan.forEach(item => {
-                let total = item.harga * item.terjual;
-                csv.push(`"${item.model}","${item.kapasitas}","${item.harga}","${item.terjual}","${total}"`);
-            });
-
-            let csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
-            let downloadLink = document.createElement("a");
-            downloadLink.download = "Laporan_Penjualan_iPhone.csv";
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = "none";
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-        }
-
-        // Jalankan render tabel saat halaman dibuka
-        renderTabel();
+            const preview = document.getElementById('companyPhotoPreview');
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('hidden');
+            document.getElementById('companyPhotoPlaceholder')?.classList.add('hidden');
+        });
     </script>
-
 </body>
 </html>

@@ -255,4 +255,12 @@
 
 </div>
 
+@if(session('auto_print'))
+<script>
+    window.addEventListener('load', () => {
+        window.print();
+    });
+</script>
+@endif
+
 @endsection

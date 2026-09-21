@@ -134,6 +134,13 @@
         justify-content: center;
         font-size: 0.875rem;
         font-weight: 800;
+        overflow: hidden;
+    }
+
+    .avatar-circle-yellow img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .dropdown-menu-dark-yellow {
@@ -262,7 +269,11 @@
                 type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <div class="d-flex align-items-center gap-2 overflow-hidden">
                 <div class="avatar-circle-yellow flex-shrink-0">
-                    {{ strtoupper(substr(Auth::user()->name ?? 'K', 0, 1)) }}
+                    @if(Auth::user()->foto)
+                        <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto {{ Auth::user()->name }}">
+                    @else
+                        {{ strtoupper(substr(Auth::user()->name ?? 'K', 0, 1)) }}
+                    @endif
                 </div>
                 <div class="text-truncate">
                     <div class="fw-bold text-white fs-7 text-truncate">{{ Auth::user()->name ?? 'Kuda' }}</div>
@@ -277,6 +288,11 @@
                 <a class="dropdown-item d-flex align-items-center gap-2" href="{{ Route::has('profile.edit') ? route('profile.edit') : (Route::has('profile.index') ? route('profile.index') : url('/profil')) }}">
                     <i class="bi bi-person"></i> Profil
                 </a>
+            </li>
+            <li>
+                <button type="button" id="themeToggle" class="dropdown-item d-flex align-items-center gap-2 border-0 bg-transparent w-100 text-start">
+                    <i class="bi bi-sun-fill"></i> <span>Mode terang</span>
+                </button>
             </li>
             <li>
                 <hr class="dropdown-divider border-secondary opacity-25">
